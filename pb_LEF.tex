@@ -118,7 +118,7 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 \begin{figure}[htb]
 \centering
 \includegraphics[width=0.5\linewidth]{results-runtime-ER.png}
-\caption{Average Runtime for DEC-LEF on Erd\"os-R\'enyi Graphs for $n \in \{10,20,30,40,50\}$\label{fig:runtime-erdos-renyi}}
+\caption{Average Runtime for DEC-LEF on Erd\"os-R\'enyi Social Networks for $n \in \{10,20,30,40,50\}$\label{fig:runtime-erdos-renyi}}
 \end{figure}
 
 \begin{table}[htb]
@@ -135,6 +135,13 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 \end{tabular}
 \caption{Number of non-LEF instance on Erd\"os-R\'enyi Graphs for $n \in \{10,20,30,40,50\}$\label{tab:non-lef-erdos-renyi}}
 \end{table}
+
+\paragraph{Path} The runtime for solving DEC-LEF on the path social networks are shown at Figure~\ref{fig:runtime-path}. For this type of networks, all the instances used in our experiments are LEF.
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.5\linewidth]{results-runtime-path.png}
+\caption{Average Runtime for DEC-LEF on Path Social Networks for $n \in \{10,20,30,40,50\}$\label{fig:runtime-path}}
+\end{figure}
 
 \section{Pseudo-Boolean Encoding for the Optimization Problem}
 \begin{itemize}
