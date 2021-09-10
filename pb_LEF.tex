@@ -13,6 +13,7 @@
 \usepackage{microtype}      % microtypography
 \usepackage{lipsum}
 \usepackage{graphicx}
+\usepackage{slashbox}
 
 \title{Pseudo-Boolean Encoding for Local Envy Freeness}
 
@@ -96,7 +97,7 @@ Clauses can be easily encoded as PB constraints as well. So $\phi_{lef}$ is repl
 \end{description}
 where $\{i,j\} \in E$.
 
-\section{Preliminary Experimental Evaluation for DEC-LEF}\label{section:expe-dec-lef}
+\section{Experimental Evaluation for DEC-LEF}\label{section:expe-dec-lef}
 \subsection{Implementation and Experimental Environment}
 \begin{itemize}
 	\item Sat4j \cite{BerreP10} used for solving the PB instance
@@ -104,33 +105,36 @@ where $\{i,j\} \in E$.
 	\item Experimental environment: macOS 11.5, M1 SoC (3.2GHz), 8Go RAM
 \end{itemize}
 
-\subsection{Random Social Network}
-\subsubsection{Protocol}
-\begin{itemize}
-	\item Social networks: Erdos-Renyi graphs with probability $p \in \{0.3, 0.5, 0.7\}$
-	\item For each $p$ and each size $n \in \{10,20,30,40,50\}$, $10$ instances are generated
-	\item The preferences of each agent are a random shuffle of the list of objects $[o_1,\dots,o_n]$
-\end{itemize}
+\subsection{Benchmark Selection}
+We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating social networks following various generation patterns. For each social network with $n$ agents, we generate random preferences over $n$ objects.
 
-\subsubsection{Results}
+\paragraph{Erd\"os-R\'enyi} For each probability $p \in \{0, 0.1, 0.3, 0.5, 0.7, 0.9, 1\}$, and each size $n \in \{10,20,30,40,50\}$, we have generated $10$ social networks with $n$ agents, and a probability $p$ that two given agents know each other.
+
+\paragraph{Path} For each size $n \in \{10,20,30,40,50\}$, we have generated the path social network made of $n$ agents, and $10$ different (random) preferences distributions.
+
+\subsection{Results}
+\paragraph{Erd\"os-R\'enyi} Figure~\ref{fig:runtime-erdos-renyi} shows the runtime for solving DEC-LEF w.r.t. the various values of  $p$ and $n$. Table~\ref{tab:non-lef-erdos-renyi} shows the number of non-LEF instances for the same categories.
+
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.5\linewidth]{results.png}
-\caption{Preliminary Results for DEC-LEF: Average Runtime on Random Graphs for $n \in \{10,20,30,40,50\}$}
+\includegraphics[width=0.5\linewidth]{results-runtime-ER.png}
+\caption{Average Runtime for DEC-LEF on Erd\"os-R\'enyi Graphs for $n \in \{10,20,30,40,50\}$\label{fig:runtime-erdos-renyi}}
 \end{figure}
 
-\subsection{Line Social Network}
-\begin{itemize}
-	\item Line made of $n \in \{10, 20, 30, 40, 50\}$ agents
-	\item The preferences of each agent are a random shuffle of the list of objects $[o_1,\dots,o_n]$
-\end{itemize}
-
-\subsubsection{Results}
-\begin{figure}[htb]
+\begin{table}[htb]
 \centering
-\includegraphics[width=0.5\linewidth]{results_line.png}
-\caption{Preliminary Results for DEC-LEF: Average Runtime on Lines for $n \in \{10,20,30,40,50\}$}
-\end{figure}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+	\hline
+	\backslashbox{$n$}{$p$} & $0$ & $0.1$ & $0.3$ & $0.5$ & $0.7$ & $0.9$ & $1$ \\ \hline
+	$10$ & $0$ & $0$ & $2$ & $9$ & $10$ & $10$ & $10$ \\
+	$20$ & $0$ & $0$ & $9$ & $10$ & $10$ & $10$ & $10$ \\
+	$30$ & $0$ & $0$ & $6$ & $10$ & $10$ & $10$ & $10$ \\
+	$40$ & $0$ & $0$ & $7$ & $10$ & $10$ & $10$ & $10$ \\
+	$50$ & $0$ & $0$ & $4$ & $10$ & $10$ & $10$ & $10$ \\
+	\hline
+\end{tabular}
+\caption{Number of non-LEF instance on Erd\"os-R\'enyi Graphs for $n \in \{10,20,30,40,50\}$\label{tab:non-lef-erdos-renyi}}
+\end{table}
 
 \section{Pseudo-Boolean Encoding for the Optimization Problem}
 \begin{itemize}
@@ -156,16 +160,6 @@ where $non\_lef_i$ is a newly introduced Boolean variable which is true iff the 
 	\item[(Obj)] \verb+minimize+ $\sum_{i \in N} non\_lef_i$
 \end{description}
 
-\section{Preliminary Experimental Evaluation for MAX-LEF}
-\subsection{Implementation and Protocol}
-Same as Section~\ref{section:expe-dec-lef}.
-
-\subsection{Results}
-\begin{figure}[htb]
-\centering
-\includegraphics[width=0.5\linewidth]{results_optim.png}
-\caption{Preliminary Results for MAX-LEF: Average Runtime for $n \in \{10,20,30,40,50\}$}
-\end{figure}
 
 \section{Ideas}
 Easy ones:
@@ -189,6 +183,55 @@ Harder ones:
 	\sum_{o_k} alloc_{i,o_k} \times u_{i,o_k} \geq \sum_{o_k} alloc_{j,o_k} \times u_{i,o_k}
 	\]
 \end{itemize}
+
+\appendix
+
+\section{Preliminary Experimental Evaluation for DEC-LEF}\label{section:prelim-expe-dec-lef}
+\subsection{Implementation and Experimental Environment}
+\begin{itemize}
+	\item Sat4j \cite{BerreP10} used for solving the PB instance
+	\item Python script used for reading the allocation instance (social network $+$ preferences), providing the PB encoding, and parsing the output of Sat4j
+	\item Experimental environment: macOS 11.5, M1 SoC (3.2GHz), 8Go RAM
+\end{itemize}
+
+\subsection{Random Social Network}
+\subsubsection{Protocol}
+\begin{itemize}
+	\item Social networks: Erdos-Renyi graphs with probability $p \in \{0.3, 0.5, 0.7\}$
+	\item For each $p$ and each size $n \in \{10,20,30,40,50\}$, $10$ instances are generated
+	\item The preferences of each agent are a random shuffle of the list of objects $[o_1,\dots,o_n]$
+\end{itemize}
+
+\subsubsection{Results}
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.5\linewidth]{prelim-random-results.png}
+\caption{Preliminary Results for DEC-LEF: Average Runtime on Random Graphs for $n \in \{10,20,30,40,50\}$}
+\end{figure}
+
+\subsection{Line Social Network}
+\begin{itemize}
+	\item Line made of $n \in \{10, 20, 30, 40, 50\}$ agents
+	\item The preferences of each agent are a random shuffle of the list of objects $[o_1,\dots,o_n]$
+\end{itemize}
+
+\subsubsection{Results}
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.5\linewidth]{prelim-line-results.png}
+\caption{Preliminary Results for DEC-LEF: Average Runtime on Lines for $n \in \{10,20,30,40,50\}$}
+\end{figure}
+
+\section{Preliminary Experimental Evaluation for MAX-LEF}
+\subsection{Implementation and Protocol}
+Same as Section~\ref{section:expe-dec-lef}.
+
+\subsection{Results}
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.5\linewidth]{prelim-results-optim.png}
+\caption{Preliminary Results for MAX-LEF: Average Runtime for $n \in \{10,20,30,40,50\}$}
+\end{figure}
 
 \bibliographystyle{unsrt}  
 \bibliography{references} 
