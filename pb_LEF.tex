@@ -112,6 +112,8 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 
 \paragraph{Path} For each size $n \in \{10,20,30,40,50\}$, we have generated the path social network made of $n$ agents, and $10$ different (random) preferences distributions.
 
+\paragraph{Barab\'asi-Albert} For each attachment value $m \in \{1,2,3,4,5\}$, and each size $n \in \{10,20,30,40,50\}$, we have generated $10$ social networks with $n$ agents, where each new node is connected to $m$ agents.
+
 \subsection{Results}
 \paragraph{Erd\"os-R\'enyi} Figure~\ref{fig:runtime-erdos-renyi} shows the runtime for solving DEC-LEF w.r.t. the various values of  $p$ and $n$. Table~\ref{tab:non-lef-erdos-renyi} shows the number of non-LEF instances for the same categories.
 
@@ -133,7 +135,7 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 	$50$ & $0$ & $0$ & $4$ & $10$ & $10$ & $10$ & $10$ \\
 	\hline
 \end{tabular}
-\caption{Number of non-LEF instance on Erd\"os-R\'enyi Graphs for $n \in \{10,20,30,40,50\}$\label{tab:non-lef-erdos-renyi}}
+\caption{Number of non-LEF instance on Erd\"os-R\'enyi Social Networks for $n \in \{10,20,30,40,50\}$\label{tab:non-lef-erdos-renyi}}
 \end{table}
 
 \paragraph{Path} The runtime for solving DEC-LEF on the path social networks are shown at Figure~\ref{fig:runtime-path}. For this type of networks, all the instances used in our experiments are LEF.
@@ -142,6 +144,29 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 \includegraphics[width=0.5\linewidth]{results-runtime-path.png}
 \caption{Average Runtime for DEC-LEF on Path Social Networks for $n \in \{10,20,30,40,50\}$\label{fig:runtime-path}}
 \end{figure}
+
+\paragraph{Barab\'asi-Albert} Figure~\ref{fig:runtime-barabasi-albert} shows the runtime for solving DEC-LEF w.r.t. the various values of  $m$ and $n$. Table~\ref{tab:non-lef-barabasi-albert} shows the number of non-LEF instances for the same categories. The value of $m$ has no significant impact on the runtime, but it increases the number of non-LEF instances.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.5\linewidth]{results-runtime-BA.png}
+\caption{Average Runtime for DEC-LEF on Barab\'asi-Albert Social Networks for $n \in \{10,20,30,40,50\}$\label{fig:runtime-barabasi-albert}}
+\end{figure}
+
+\begin{table}[htb]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+	\hline
+	\backslashbox{$n$}{$m$} & $1$ & $2$ & $3$ & $4$ & $5$ \\ \hline
+	$10$ & $0$ & $8$ & $10$ & $9$ & $10$ \\
+	$20$ & $0$ & $1$ & $7$ & $9$ & $10$ \\
+	$30$ & $0$ & $0$ & $0$ & $2$ & $7$ \\
+	$40$ & $0$ & $0$ & $0$ & $0$ & $3$ \\
+	$50$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	\hline
+\end{tabular}
+\caption{Number of non-LEF instance on Barab\'asi-Albert Social Networks for $n \in \{10,20,30,40,50\}$\label{tab:non-lef-barabasi-albert}}
+\end{table}
 
 \section{Pseudo-Boolean Encoding for the Optimization Problem}
 \begin{itemize}
