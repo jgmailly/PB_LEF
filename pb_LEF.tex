@@ -14,6 +14,7 @@
 \usepackage{lipsum}
 \usepackage{graphicx}
 \usepackage{slashbox}
+\usepackage{xcolor}
 
 \title{Pseudo-Boolean Encoding for Local Envy Freeness}
 
@@ -114,6 +115,8 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 
 \paragraph{Barab\'asi-Albert} For each attachment value $m \in \{1,2,3,4,5\}$, and each size $n \in \{10,20,30,40,50\}$, we have generated $10$ social networks with $n$ agents, where each new node is connected to $m$ agents.
 
+\paragraph{Watts-Strogatz} For each attachment value $m \in \{2,4,6,8\}$, each probability of rewiring $p \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$, and each size $n \in \{10,20,30,40,50\}$, we have generated $10$ social networks with $n$ agents, an attachment $m$, and a probability $p$.
+
 \subsection{Results}
 \paragraph{Erd\"os-R\'enyi} Figure~\ref{fig:runtime-erdos-renyi} shows the runtime for solving DEC-LEF w.r.t. the various values of  $p$ and $n$. Table~\ref{tab:non-lef-erdos-renyi} shows the number of non-LEF instances for the same categories.
 
@@ -167,6 +170,14 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 \end{tabular}
 \caption{Number of non-LEF instance on Barab\'asi-Albert Social Networks for $n \in \{10,20,30,40,50\}$\label{tab:non-lef-barabasi-albert}}
 \end{table}
+
+\paragraph{Watts-Strogatz} Results for Watts-Strogatz instances with $m = 2$ are shown at Figure~\ref{fig:runtime-watts-strogatz-2}.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.5\linewidth]{results-runtime-WS-2.png}
+\caption{Average Runtime for DEC-LEF on Watts-Strogatz Social Networks for $m=2$ and $n \in \{10,20,30,40,50\}$\label{fig:runtime-watts-strogatz-2}}
+\end{figure}
 
 \section{Pseudo-Boolean Encoding for the Optimization Problem}
 \begin{itemize}
