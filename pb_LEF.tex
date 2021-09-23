@@ -100,6 +100,30 @@ Clauses can be easily encoded as PB constraints as well. So $\phi_{lef}$ is repl
 \end{description}
 where $\{i,j\} \in E$.
 
+\section{Pseudo-Boolean Encoding for the Optimization Problem}
+\begin{itemize}
+	\item $O = \{o_1, \dots, o_n\}$: set of objects
+	\item $N = \{1,\dots,n\}$: set of agents
+	\item $\succ_i$: preferences of agent $i$ over $O$ (linear order)
+	\item $G = \langle N, E\rangle$: social network (undirected graph)
+\end{itemize}
+{\bf Problem:} assign each agent $i$ an object $o_k$ s.t. the number of LEF agents is maximal.
+%$i$ does not prefer the object assigned to one of her neighbors, {\em i.e.} $\forall j \in N$ s.t. $\{i,j\} \in E$, $i$ does not prefers $o_l$ to $o_k$, where $o_l$ is the object assigned to $j$.
+
+The encoding is almost the same as in the previous case, except that the constraint
+\begin{description}
+	\item[$(PB_{lef}^{i,j,o_k,o_l})$] $\neg alloc_{i,o_k} + \neg alloc_{j,o_l} + pref_i^{o_k,o_l} \geq 1$
+\end{description}
+%where $\{i,j\} \in E$.
+is replaced by
+\begin{description}
+	\item[$(PB_{lef}^{i,j,o_k,o_l})$] $\neg alloc_{i,o_k} + \neg alloc_{j,o_l} + pref_i^{o_k,o_l} + non\_lef_i \geq 1$
+\end{description}
+where $non\_lef_i$ is a newly introduced Boolean variable which is true iff the agent $i$ is not LEF: the variable is assigned $\top$ in order to satisfy the constraint in the case where the rest of the constraint is not satisfy. Then, an objective function is added:
+\begin{description}
+	\item[(Obj)] \verb+minimize+ $\sum_{i \in N} non\_lef_i$
+\end{description}
+
 \section{Experimental Evaluation for DEC-LEF}\label{section:expe-dec-lef}
 \subsection{Implementation and Experimental Environment}
 \begin{itemize}
@@ -178,7 +202,7 @@ Table~\ref{tab:non-lef-erdos-renyi} shows the number of non-LEF instances for th
 \caption{Number of non-LEF instance on Barab\'asi-Albert Social Networks for $n \in \{10,20,30,40,50\}$\label{tab:non-lef-barabasi-albert}}
 \end{table}
 
-\paragraph{Watts-Strogatz} Runtimes for Watts-Strogatz instances are shown at Figure~\ref{fig:runtime-watts-strogatz}, with each subfigure corresponding to a different value of  $m $. The general observation is the same as for previous categories: neither $m$ nor $p$ has a significant impact on the runtime (at the exception of $m=4$ and $p=0.7$, where one instance was solved in more than $2300$ seconds, instead of $145$ seconds for other instances of the same size, hence the higher average runtime).
+\paragraph{Watts-Strogatz} Runtimes for Watts-Strogatz instances are shown at Figure~\ref{fig:runtime-watts-strogatz}, with each subfigure corresponding to a different value of  $m $. The general observation is the same as for previous categories: neither $m$ nor $p$ has a significant impact on the runtime (at the exception of $m=4$ and $p=0.7$, where one instance was solved in more than $2300$ seconds, instead of $145$ seconds for other instances of the same size, hence the higher average runtime). Table~\ref{tab:non-lef-watts-strogatz} presents the results regarding the number of non-LEF instances.
 
 \begin{figure}[htb]
 \centering
@@ -193,34 +217,65 @@ Table~\ref{tab:non-lef-erdos-renyi} shows the number of non-LEF instances for th
 \includegraphics[width=0.45\linewidth]{results-runtime-WS-6.png}
 }
 \subfloat[$m=8$\label{fig:runtime-watts-strogatz-8}]{
- \missingfigure[figwidth=0.45\linewidth,figheight=4.9cm]{Placeholder}
+\includegraphics[width=0.45\linewidth]{results-runtime-WS-8.png}
+% \missingfigure[figwidth=0.45\linewidth,figheight=4.9cm]{Placeholder}
 }
 \caption{Average Runtime for DEC-LEF on Watts-Strogatz Social Networks and $n \in \{10,20,30,40,50\}$\label{fig:runtime-watts-strogatz}}
 \end{figure}
 
-\section{Pseudo-Boolean Encoding for the Optimization Problem}
-\begin{itemize}
-	\item $O = \{o_1, \dots, o_n\}$: set of objects
-	\item $N = \{1,\dots,n\}$: set of agents
-	\item $\succ_i$: preferences of agent $i$ over $O$ (linear order)
-	\item $G = \langle N, E\rangle$: social network (undirected graph)
-\end{itemize}
-{\bf Problem:} assign each agent $i$ an object $o_k$ s.t. the number of LEF agents is maximal.
-%$i$ does not prefer the object assigned to one of her neighbors, {\em i.e.} $\forall j \in N$ s.t. $\{i,j\} \in E$, $i$ does not prefers $o_l$ to $o_k$, where $o_l$ is the object assigned to $j$.
+\begin{table}[htb]
+\centering
+\subfloat[$m=2$\label{tab:non-lef-watts-strogatz-2}]{
+\begin{tabular}{|c|c|c|c|c|c|}
+	\hline
+	\backslashbox{$n$}{$p$} & $0.1$ & $0.3$ & $0.5$ & $0.7$ & $0.9$ \\ \hline
+	$10$ & $0$ & $0$ & $2$ & $1$ & $0$ \\
+	$20$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	$30$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	$40$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	$50$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	\hline
+\end{tabular}
+}
+\subfloat[$m=4$\label{tab:non-lef-watts-strogatz-4}]{
+\begin{tabular}{|c|c|c|c|c|c|}
+	\hline
+	\backslashbox{$n$}{$p$} & $0.1$ & $0.3$ & $0.5$ & $0.7$ & $0.9$ \\ \hline
+	$10$ & $8$ & $9$ & $8$ & $8$ & $9$ \\
+	$20$ & $0$ & $0$ & $0$ & $1$ & $1$ \\
+	$30$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	$40$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	$50$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	\hline
+\end{tabular}
+}
 
-The encoding is almost the same as in the previous case, except that the constraint
-\begin{description}
-	\item[$(PB_{lef}^{i,j,o_k,o_l})$] $\neg alloc_{i,o_k} + \neg alloc_{j,o_l} + pref_i^{o_k,o_l} \geq 1$
-\end{description}
-%where $\{i,j\} \in E$.
-is replaced by
-\begin{description}
-	\item[$(PB_{lef}^{i,j,o_k,o_l})$] $\neg alloc_{i,o_k} + \neg alloc_{j,o_l} + pref_i^{o_k,o_l} + non\_lef_i \geq 1$
-\end{description}
-where $non\_lef_i$ is a newly introduced Boolean variable which is true iff the agent $i$ is not LEF: the variable is assigned $\top$ in order to satisfy the constraint in the case where the rest of the constraint is not satisfy. Then, an objective function is added:
-\begin{description}
-	\item[(Obj)] \verb+minimize+ $\sum_{i \in N} non\_lef_i$
-\end{description}
+\subfloat[$m=6$\label{tab:non-lef-watts-strogatz-6}]{
+\begin{tabular}{|c|c|c|c|c|c|}
+	\hline
+	\backslashbox{$n$}{$p$} & $0.1$ & $0.3$ & $0.5$ & $0.7$ & $0.9$ \\ \hline
+	$10$ & $10$ & $10$ & $10$ & $10$ & $10$ \\
+	$20$ & $6$ & $8$ & $9$ & $8$ & $2$ \\
+	$30$ & $0$ & $0$ & $0$ & $1$ & $0$ \\
+	$40$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	$50$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	\hline
+\end{tabular}
+}
+\subfloat[$m=8$\label{tab:non-lef-watts-strogatz-8}]{
+\begin{tabular}{|c|c|c|c|c|c|}
+	\hline
+	\backslashbox{$n$}{$p$} & $0.1$ & $0.3$ & $0.5$ & $0.7$ & $0.9$ \\ \hline
+	$10$ & $10$ & $10$ & $10$ & $10$ & $10$ \\
+	$20$ & $10$ & $10$ & $10$ & $10$ & $10$ \\
+	$30$ & $2$ & $4$ & $2$ & $6$ & $4$ \\
+	$40$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	$50$ & $0$ & $0$ & $0$ & $0$ & $0$ \\
+	\hline
+\end{tabular}
+}
+\caption{Number of non-LEF instance on Watts-Strogatz Social Networks for $n \in \{10,20,30,40,50\}$\label{tab:non-lef-watts-strogatz}}
+\end{table}
 
 
 \section{Ideas}
