@@ -15,6 +15,8 @@
 \usepackage{graphicx}
 \usepackage{slashbox}
 \usepackage{xcolor}
+\usepackage{subfig}
+\usepackage{todonotes}
 
 \title{Pseudo-Boolean Encoding for Local Envy Freeness}
 
@@ -118,13 +120,17 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 \paragraph{Watts-Strogatz} For each attachment value $m \in \{2,4,6,8\}$, each probability of rewiring $p \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$, and each size $n \in \{10,20,30,40,50\}$, we have generated $10$ social networks with $n$ agents, an attachment $m$, and a probability $p$.
 
 \subsection{Results}
-\paragraph{Erd\"os-R\'enyi} Figure~\ref{fig:runtime-erdos-renyi} shows the runtime for solving DEC-LEF w.r.t. the various values of  $p$ and $n$. Table~\ref{tab:non-lef-erdos-renyi} shows the number of non-LEF instances for the same categories.
+For each category of social networks in our experiments, we describe the results regarding the runtime and the number of (non-)LEF instances, depending on the values of the various parameters. All the runtimes given are the average over the $10$ instances in each category of social networks.
+
+\paragraph{Erd\"os-R\'enyi} Figure~\ref{fig:runtime-erdos-renyi} shows the runtime for solving DEC-LEF w.r.t. the various values of  $p$ and $n$. The impact of $p$ on the runtime is not easy to assess. Indeed, hardest instances are the ones with the lowest probability ($p = 0.0, 0.1$), {\em i.e.} the least dense social networks. On the opposite, the easiest instances are the ones with $p=0.5$, which seems to indicate that the solver performs better when the density of the social network is neither too high nor too low. 
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.5\linewidth]{results-runtime-ER.png}
+\includegraphics[width=0.45\linewidth]{results-runtime-ER.png}
 \caption{Average Runtime for DEC-LEF on Erd\"os-R\'enyi Social Networks for $n \in \{10,20,30,40,50\}$\label{fig:runtime-erdos-renyi}}
 \end{figure}
+
+Table~\ref{tab:non-lef-erdos-renyi} shows the number of non-LEF instances for the same categories of instances. We observe that $p$ has an impact on the local envy-freeness, since the number of non-LEF instances increases when the probability does so. More specifically, when $p \geq 5$, all the instances but one are non-LEF. On the contrary, all the instances are LEF when $p \leq 0.1$. Only in the case $p=0.3$ there is some variability of the number of non-LEF instances. Notice that we do not observe a direct correlation between $n$ and the number of non-LEF instances.
 
 \begin{table}[htb]
 \centering
@@ -141,18 +147,19 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 \caption{Number of non-LEF instance on Erd\"os-R\'enyi Social Networks for $n \in \{10,20,30,40,50\}$\label{tab:non-lef-erdos-renyi}}
 \end{table}
 
-\paragraph{Path} The runtime for solving DEC-LEF on the path social networks are shown at Figure~\ref{fig:runtime-path}. For this type of networks, all the instances used in our experiments are LEF.
+\paragraph{Path} The runtime for solving DEC-LEF on the path social networks are shown at Figure~\ref{fig:runtime-path}. For this type of networks, all the instances used in our experiments are LEF. We observe that the impact of the network size on the runtime is similar for this type of graphs to the impact for Erd\"os-R\'enyi graphs with $p = 0.0, 0.1$. Similar observation can be made with the following categories of networks.
+
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.5\linewidth]{results-runtime-path.png}
+\includegraphics[width=0.45\linewidth]{results-runtime-path.png}
 \caption{Average Runtime for DEC-LEF on Path Social Networks for $n \in \{10,20,30,40,50\}$\label{fig:runtime-path}}
 \end{figure}
 
-\paragraph{Barab\'asi-Albert} Figure~\ref{fig:runtime-barabasi-albert} shows the runtime for solving DEC-LEF w.r.t. the various values of  $m$ and $n$. Table~\ref{tab:non-lef-barabasi-albert} shows the number of non-LEF instances for the same categories. The value of $m$ has no significant impact on the runtime, but it increases the number of non-LEF instances.
+\paragraph{Barab\'asi-Albert} Figure~\ref{fig:runtime-barabasi-albert} shows the runtime for solving DEC-LEF w.r.t. the various values of  $m$ and $n$. Table~\ref{tab:non-lef-barabasi-albert} shows the number of non-LEF instances for the same categories. The value of $m$ has no significant impact on the runtime, but it increases the number of non-LEF instances. Observe that, contrary to the case of Erd\"os-R\'enyi networks, here the value of $n$ has a clear impact on the number of non-LEF instances: the higher is $n$, the lower is the number of non-LEF instances, with all the instances being LEF when $n=50$.
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.5\linewidth]{results-runtime-BA.png}
+\includegraphics[width=0.45\linewidth]{results-runtime-BA.png}
 \caption{Average Runtime for DEC-LEF on Barab\'asi-Albert Social Networks for $n \in \{10,20,30,40,50\}$\label{fig:runtime-barabasi-albert}}
 \end{figure}
 
@@ -171,12 +178,24 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 \caption{Number of non-LEF instance on Barab\'asi-Albert Social Networks for $n \in \{10,20,30,40,50\}$\label{tab:non-lef-barabasi-albert}}
 \end{table}
 
-\paragraph{Watts-Strogatz} Results for Watts-Strogatz instances with $m = 2$ are shown at Figure~\ref{fig:runtime-watts-strogatz-2}.
+\paragraph{Watts-Strogatz} Runtimes for Watts-Strogatz instances are shown at Figure~\ref{fig:runtime-watts-strogatz}, with each subfigure corresponding to a different value of  $m $. The general observation is the same as for previous categories: neither $m$ nor $p$ has a significant impact on the runtime (at the exception of $m=4$ and $p=0.7$, where one instance was solved in more than $2300$ seconds, instead of $145$ seconds for other instances of the same size, hence the higher average runtime).
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.5\linewidth]{results-runtime-WS-2.png}
-\caption{Average Runtime for DEC-LEF on Watts-Strogatz Social Networks for $m=2$ and $n \in \{10,20,30,40,50\}$\label{fig:runtime-watts-strogatz-2}}
+\subfloat[$m=2$\label{fig:runtime-watts-strogatz-2}]{
+\includegraphics[width=0.45\linewidth]{results-runtime-WS-2.png}
+}
+\subfloat[$m=4$\label{fig:runtime-watts-strogatz-4}]{
+\includegraphics[width=0.45\linewidth]{results-runtime-WS-4.png}
+}
+
+\subfloat[$m=6$\label{fig:runtime-watts-strogatz-6}]{
+\includegraphics[width=0.45\linewidth]{results-runtime-WS-6.png}
+}
+\subfloat[$m=8$\label{fig:runtime-watts-strogatz-8}]{
+ \missingfigure[figwidth=0.45\linewidth,figheight=4.9cm]{Placeholder}
+}
+\caption{Average Runtime for DEC-LEF on Watts-Strogatz Social Networks and $n \in \{10,20,30,40,50\}$\label{fig:runtime-watts-strogatz}}
 \end{figure}
 
 \section{Pseudo-Boolean Encoding for the Optimization Problem}
