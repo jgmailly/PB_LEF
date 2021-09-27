@@ -17,6 +17,7 @@
 \usepackage{xcolor}
 \usepackage{subfig}
 \usepackage{todonotes}
+\usepackage{amsmath}
 
 \title{Pseudo-Boolean Encoding for Local Envy Freeness}
 
@@ -142,6 +143,14 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 \paragraph{Barab\'asi-Albert} For each attachment value $m \in \{1,2,3,4,5\}$, and each size $n \in \{10,20,30,40,50\}$, we have generated $10$ social networks with $n$ agents, where each new node is connected to $m$ agents.
 
 \paragraph{Watts-Strogatz} For each attachment value $m \in \{2,4,6,8\}$, each probability of rewiring $p \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$, and each size $n \in \{10,20,30,40,50\}$, we have generated $10$ social networks with $n$ agents, an attachment $m$, and a probability $p$.
+
+\paragraph{Social network with homophily?} Two agents $i$ and $j$ are connected with probability $q_{ij}=|\{(a,b)\in O^2:a\succ_i b\text{ and }a\succ_j b\}|/(n\cdot (n-1)/2)$.
+The more the agents agree on pairwise comparisons of the objects, the more likely they are connected. 
+In particular, in this model of homophily, the probability of connection between two agents is inversely proportional to the Kendall-Tau distance between their respective preference rankings. 
+Moreover, two agents with exactly the same preferences are necessarily connected.
+
+
+
 
 \subsection{Results}
 For each category of social networks in our experiments, we describe the results regarding the runtime and the number of (non-)LEF instances, depending on the values of the various parameters. All the runtimes given are the average over the $10$ instances in each category of social networks.
