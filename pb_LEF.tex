@@ -144,12 +144,13 @@ We have used NetworkX\footnote{See \url{https://networkx.org}.} for generating s
 
 \paragraph{Watts-Strogatz} For each attachment value $m \in \{2,4,6,8\}$, each probability of rewiring $p \in \{0.1, 0.3, 0.5, 0.7, 0.9\}$, and each size $n \in \{10,20,30,40,50\}$, we have generated $10$ social networks with $n$ agents, an attachment $m$, and a probability $p$.
 
-\paragraph{Social network with homophily?} Two agents $i$ and $j$ are connected with probability $q_{ij}=|\{(a,b)\in O^2:a\succ_i b\text{ and }a\succ_j b\}|/(n\cdot (n-1)/2)$.
+\paragraph{Social network with homophily?} Two agents $i$ and $j$ are connected with probability $q_{ij}=q_{ji}=|\{(a,b)\in O^2:a\succ_i b\text{ and }a\succ_j b\}|/(n\cdot (n-1)/2)$.
 The more the agents agree on pairwise comparisons of the objects, the more likely they are connected. 
 In particular, in this model of homophily, the probability of connection between two agents is inversely proportional to the Kendall-Tau distance between their respective preference rankings. 
 Moreover, two agents with exactly the same preferences are necessarily connected.
 
-
+\paragraph{Complement graph with homophily?} Two agents $i$ and $j$ are connected with probability $1-q_{ij}$, i.e., the more the agents \emph{disagree} on pairwise comparisons of the objects, the more likely they are connected. 
+In this particular model, two agents with exactly opposite preferences are necessarily connected. 
 
 
 \subsection{Results}
