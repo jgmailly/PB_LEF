@@ -311,6 +311,20 @@ Harder ones:
 	\]
 \end{itemize}
 
+\section{Related decision problems}
+
+\begin{itemize}
+\item Does there exist an LEF allocation if we remove $k$ agents from the instance / or $k$ edges from the graph?
+\begin{itemize}
+\item Para-NP-hard problem: it boils down to the problem of deciding existence of an LEF allocation when $k=0$ (this hardness result can be extended to any value of $k$) $\rightarrow$ not really interesting...
+\end{itemize}
+\item Given an allocation $\sigma$, is it possible to make it LEF if we remove $k$ agents from the instance / or $k$ edges from the graph?
+\begin{itemize}
+\item May be useful for justifying the choice of a given allocation
+\item This problem is at least in XP: by enumerating over all elements that can be removed ($\mathcal{O}(n^k)$), we can check in polynomial time whether the allocation in the resulting instance is LEF.
+\end{itemize}
+\end{itemize}
+
 \appendix
 
 \section{Preliminary Experimental Evaluation for DEC-LEF}\label{section:prelim-expe-dec-lef}
