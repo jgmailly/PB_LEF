@@ -79,12 +79,12 @@ def encode_pref_agent(pref_agent,pref_vars,objects,agents,agent):
 
     return [pb_encoding,n_constraints]
 
-if len(sys.argv) != 3:
-    sys.exit("Usage: python3 solve_LFE.py <preferences_file> <social_file>")
+if len(sys.argv) != 4:
+    sys.exit("Usage: python3 solve_LEF.py <preferences_file> <social_file> <use_complement>")
 
 preferences_file = sys.argv[1]
 social_file = sys.argv[2]
-
+use_complement = True if sys.argv[3] == "True" else False
 
 
 preferences = []
@@ -162,13 +162,35 @@ for obj in objects:
     pb_encoding += alloc + "\n"
     n_constraints += 1
 
-for agent_i in agents:
-    for agent_j in agents:
-        if ([agent_i,agent_j] in social) or ([agent_j,agent_i] in social):
-            for obj_k in objects:
-                for obj_l in objects:
-                    pb_encoding += f"1 ~{alloc_vars[agents.index(agent_i)][objects.index(obj_k)]} +1 ~{alloc_vars[agents.index(agent_j)][objects.index(obj_l)]} +1 {pref_vars[agents.index(agent_i)][objects.index(obj_k)][objects.index(obj_l)]} +1 {non_lef_vars[agents.index(agent_i)]} >= 1;\n"
-                    n_constraints += 1
+if not use_complement:
+    for agent_i in agents:
+        for agent_j in agents:
+            if ([agent_i,agent_j] in social) or ([agent_j,agent_i] in social):
+                for obj_k in objects:
+                    for obj_l in objects:
+                        pb_encoding += f"1 ~{alloc_vars[agents.index(agent_i)][objects.index(obj_k)]} +1 ~{alloc_vars[agents.index(agent_j)][objects.index(obj_l)]} +1 {pref_vars[agents.index(agent_i)][objects.index(obj_k)][objects.index(obj_l)]} +1 {non_lef_vars[agents.index(agent_i)]} >= 1;\n"
+                        n_constraints += 1
+else:
+    # if reverse_graph
+    #complement_social = ((agent_i, agent_j) for agent_i in agents for agent_j in agents if (([agent_i,agent_j] not in social) and ([agent_j,agent_i] not in social) and (agent_i != agent_j)))
+    unknown_agents = dict()
+    for agent_i in agents:
+        unknown_agents[agent_i] = list()
+    for agent_i in agents:
+        for agent_j in agents:
+            if (agent_i != agent_j) and not (([agent_i,agent_j] in social) or ([agent_j,agent_i] in social)):
+                unknown_agents[agent_i].append(agent_j)
+    #for agent_i in agents:
+    #    print(unknown_agents[agent_i])
+    for obj_k in objects:
+        for obj_l in objects:
+            for agent_i in agents:
+                pb_encoding += f"1 ~{pref_vars[agents.index(agent_i)][objects.index(obj_k)][objects.index(obj_l)]} +1 ~{alloc_vars[agents.index(agent_i)][objects.index(obj_l)]}"
+                for agent_j in unknown_agents[agent_i]:
+                    pb_encoding += f" +1 {alloc_vars[agents.index(agent_j)][objects.index(obj_k)]}"
+                pb_encoding += f" +1 {non_lef_vars[agents.index(agent_i)]} >= 1;\n"
+                n_constraints += 1
+
 
 #print("Preferences:", preferences)
 for agent in agents:
