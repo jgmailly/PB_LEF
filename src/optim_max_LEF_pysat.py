@@ -1,6 +1,7 @@
 import sys
-from pysat.solvers import Glucose4
-from pysat.formula import CNF
+#from pysat.solvers import Glucose4
+from pysat.examples.rc2 import RC2
+from pysat.formula import WCNF
 
 def parse_tgf(social_file):
     with open(social_file) as soc_file:
@@ -114,7 +115,7 @@ for agent in agents:
             pref_var_id += 1
             pref_vars[agents.index(agent)][objects.index(obj_k)].append(alloc_var_id + pref_var_id)
 
-cnf = CNF()
+wcnf = WCNF()
 n_constraints = 0
 
 for agent_id in range(len(agents)):
@@ -122,9 +123,9 @@ for agent_id in range(len(agents)):
     for obj_id in range(len(objects)):
         at_least_one.append(alloc_vars[agent_id][obj_id])
         for obj2_id in range(obj_id+1, len(objects)):
-            cnf.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent_id][obj2_id]])
+            wcnf.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent_id][obj2_id]])
             n_constraints += 1
-    cnf.append(at_least_one)
+    wcnf.append(at_least_one)
     n_constraints += 1
 
 for obj_id in range(len(objects)):
@@ -132,9 +133,9 @@ for obj_id in range(len(objects)):
     for agent_id in range(len(agents)):
         at_least_one.append(alloc_vars[agent_id][obj_id])
         for agent2_id in range(agent_id+1, len(agents)):
-            cnf.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent2_id][obj_id]])
+            wcnf.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent2_id][obj_id]])
             n_constraints += 1
-    cnf.append(at_least_one)
+    wcnf.append(at_least_one)
     n_constraints += 1
 if not use_complement:
     for agent_i in agents:
@@ -142,7 +143,7 @@ if not use_complement:
             if ([agent_i,agent_j] in social) or ([agent_j,agent_i] in social):
                 for obj_k in objects:
                     for obj_l in objects:
-                        cnf.append([-alloc_vars[agents.index(agent_i)][objects.index(obj_k)], -alloc_vars[agents.index(agent_j)][objects.index(obj_l)], pref_vars[agents.index(agent_i)][objects.index(obj_k)][objects.index(obj_l)]])
+                        wcnf.append([-alloc_vars[agents.index(agent_i)][objects.index(obj_k)], -alloc_vars[agents.index(agent_j)][objects.index(obj_l)], pref_vars[agents.index(agent_i)][objects.index(obj_k)][objects.index(obj_l)]], weight=1)
                         n_constraints += 1
 else:
     unknown_agents = dict()
@@ -161,20 +162,22 @@ else:
                 clause += [-pref_vars[agents.index(agent_i)][objects.index(obj_k)][objects.index(obj_l)], -alloc_vars[agents.index(agent_i)][objects.index(obj_l)]]
                 for agent_j in unknown_agents[agent_i]:
                     clause.append(alloc_vars[agents.index(agent_j)][objects.index(obj_k)])
-                cnf.append(clause)
+                wcnf.append(clause, weight=1)
                 n_constraints += 1    
 
 
 for agent in agents:
     pref_agent = preferences[agents.index(agent)]
     pb_pref_agent = encode_pref_agent(pref_agent,pref_vars,objects,agents,agent)
-    cnf.extend(pb_pref_agent[0])
+    wcnf.extend(pb_pref_agent[0])
     n_constraints += pb_pref_agent[1]
 
-with Glucose4(bootstrap_with=cnf.clauses) as g:
-    LEF = g.solve()
-    if LEF:
+with RC2(wcnf) as rc2:
+    model = rc2.compute()
+    if rc2.cost == 0:
         print("LEF allocation found")
-        parse_model(g.get_model()[:alloc_var_id], agents, objects, alloc_vars)
+        parse_model(model[:alloc_var_id], agents, objects, alloc_vars)
     else:
         print("No LEF allocation")
+        parse_model(model[:alloc_var_id], agents, objects, alloc_vars)
+        print(f"Solution with {rc2.cost} non-LEF agent{'s' if rc2.cost > 1 else ''}")
