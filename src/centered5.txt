@@ -1,0 +1,36 @@
+First agent (connected to everyone) need o1 (their favorite object).
+
+if we force A2 to have o1, MUS is 
+not alloc_(0,o2), not alloc_(1,o1), not pref_(0:(o1 > o2),
+not alloc_(0,o3), not alloc_(1,o1), not pref_(0:(o1 > o3),
+not alloc_(0,o5), not alloc_(1,o1), not pref_(0:(o1 > o5),
+not alloc_(0,o4), not alloc_(1,o1), not pref_(0:(o1 > o4),
+
+if we force A1 to have o2 (second prefered), MUS is 
+not alloc_(0,o2), not alloc_(1,o1), not pref_(0:(o1 > o2),
+not alloc_(0,o2), not alloc_(2,o1), not pref_(0:(o1 > o2),
+not alloc_(0,o2), not alloc_(3,o1), not pref_(0:(o1 > o2),
+not alloc_(0,o2), not alloc_(4,o1), not pref_(0:(o1 > o2),
+
+if we force A1 to have o3 (third prefered), MUS is 
+not alloc_(0,o3), not alloc_(1,o1), not pref_(0:(o1 > o3),
+not alloc_(0,o3), not alloc_(1,o2), not pref_(0:(o2 > o3),
+not alloc_(0,o3), not alloc_(2,o1), not pref_(0:(o1 > o3),
+not alloc_(0,o3), not alloc_(2,o2), not pref_(0:(o2 > o3),
+not alloc_(0,o3), not alloc_(3,o1), not pref_(0:(o1 > o3),
+not alloc_(0,o3), not alloc_(3,o2), not pref_(0:(o2 > o3),
+
+if we force A1 to have o5 (fourth prefered), MUS is 
+not alloc_(0,o5), not alloc_(1,o1), not pref_(0:(o1 > o5),
+not alloc_(0,o5), not alloc_(1,o2), not pref_(0:(o2 > o5),
+not alloc_(0,o5), not alloc_(1,o3), not pref_(0:(o3 > o5),
+not alloc_(0,o5), not alloc_(2,o1), not pref_(0:(o1 > o5),
+not alloc_(0,o5), not alloc_(2,o2), not pref_(0:(o2 > o5),
+not alloc_(0,o5), not alloc_(2,o3), not pref_(0:(o3 > o5),
+
+if we force A1 to have o4 (last), MUS is 
+not alloc_(0,o4), not alloc_(1,o1), not pref_(0:(o1 > o4),
+not alloc_(0,o4), not alloc_(1,o2), not pref_(0:(o2 > o4),
+not alloc_(0,o4), not alloc_(1,o3), not pref_(0:(o3 > o4),
+not alloc_(0,o4), not alloc_(1,o5), not pref_(0:(o5 > o4),
+

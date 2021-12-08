@@ -1,0 +1,2 @@
+if Agent 2 has Obj 4 (second of A1), MUS is 16 but comp MUS: 65 ! Very unusual,
+it is nearly always |comp MUS| < |MUS|

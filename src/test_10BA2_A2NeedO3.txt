@@ -1,0 +1,47 @@
+A2 needs o3. The MUS is sadly extremely large (99 and 152 for True and False resp.)
+
+A6 cant have o3 since they are connected to A2 (and A2 fav is o3).
+Yet the MUS is very complex:
+
+len mus: 39
+not alloc_(0,o2), not alloc_(1,o7), not pref_(1:(o2 > o7),  [[0, 1], [1, 8], [1, 1, 8]]
+not alloc_(0,o6), not alloc_(1,o7), not pref_(1:(o6 > o7),  [[0, 2], [1, 8], [1, 2, 8]]
+not alloc_(0,o1), not alloc_(1,o7), not pref_(1:(o1 > o7),  [[0, 3], [1, 8], [1, 3, 8]]
+not alloc_(0,o4), not alloc_(1,o7), not pref_(1:(o4 > o7),  [[0, 4], [1, 8], [1, 4, 8]]
+not alloc_(0,o9), not alloc_(1,o7), not pref_(1:(o9 > o7),  [[0, 5], [1, 8], [1, 5, 8]]
+not alloc_(0,o5), not alloc_(1,o7), not pref_(1:(o5 > o7),  [[0, 7], [1, 8], [1, 7, 8]]
+not alloc_(0,o2), not alloc_(1,o10), not pref_(1:(o2 > o10),  [[0, 1], [1, 9], [1, 1, 9]]
+not alloc_(0,o6), not alloc_(1,o10), not pref_(1:(o6 > o10),  [[0, 2], [1, 9], [1, 2, 9]]
+not alloc_(0,o1), not alloc_(1,o10), not pref_(1:(o1 > o10),  [[0, 3], [1, 9], [1, 3, 9]]
+not alloc_(0,o4), not alloc_(1,o10), not pref_(1:(o4 > o10),  [[0, 4], [1, 9], [1, 4, 9]]
+not alloc_(0,o9), not alloc_(1,o10), not pref_(1:(o9 > o10),  [[0, 5], [1, 9], [1, 5, 9]]
+not alloc_(0,o5), not alloc_(1,o10), not pref_(1:(o5 > o10),  [[0, 7], [1, 9], [1, 7, 9]]
+not alloc_(0,o7), not alloc_(1,o10), not pref_(1:(o7 > o10),  [[0, 8], [1, 9], [1, 8, 9]]
+not alloc_(1,o7), not alloc_(3,o2), not pref_(1:(o2 > o7),  [[1, 8], [3, 1], [1, 1, 8]]
+not alloc_(1,o7), not alloc_(3,o6), not pref_(1:(o6 > o7),  [[1, 8], [3, 2], [1, 2, 8]]
+not alloc_(1,o7), not alloc_(3,o1), not pref_(1:(o1 > o7),  [[1, 8], [3, 3], [1, 3, 8]]
+not alloc_(1,o7), not alloc_(3,o4), not pref_(1:(o4 > o7),  [[1, 8], [3, 4], [1, 4, 8]]
+not alloc_(1,o7), not alloc_(3,o9), not pref_(1:(o9 > o7),  [[1, 8], [3, 5], [1, 5, 8]]
+not alloc_(1,o7), not alloc_(3,o5), not pref_(1:(o5 > o7),  [[1, 8], [3, 7], [1, 7, 8]]
+not alloc_(1,o10), not alloc_(3,o2), not pref_(1:(o2 > o10),  [[1, 9], [3, 1], [1, 1, 9]]
+not alloc_(1,o10), not alloc_(3,o6), not pref_(1:(o6 > o10),  [[1, 9], [3, 2], [1, 2, 9]]
+not alloc_(1,o10), not alloc_(3,o1), not pref_(1:(o1 > o10),  [[1, 9], [3, 3], [1, 3, 9]]
+not alloc_(1,o10), not alloc_(3,o4), not pref_(1:(o4 > o10),  [[1, 9], [3, 4], [1, 4, 9]]
+not alloc_(1,o10), not alloc_(3,o9), not pref_(1:(o9 > o10),  [[1, 9], [3, 5], [1, 5, 9]]
+not alloc_(1,o10), not alloc_(3,o5), not pref_(1:(o5 > o10),  [[1, 9], [3, 7], [1, 7, 9]]
+not alloc_(1,o10), not alloc_(3,o7), not pref_(1:(o7 > o10),  [[1, 9], [3, 8], [1, 8, 9]]
+not alloc_(1,o7), not alloc_(4,o2), not pref_(1:(o2 > o7),  [[1, 8], [4, 1], [1, 1, 8]]
+not alloc_(1,o7), not alloc_(4,o6), not pref_(1:(o6 > o7),  [[1, 8], [4, 2], [1, 2, 8]]
+not alloc_(1,o7), not alloc_(4,o1), not pref_(1:(o1 > o7),  [[1, 8], [4, 3], [1, 3, 8]]
+not alloc_(1,o7), not alloc_(4,o4), not pref_(1:(o4 > o7),  [[1, 8], [4, 4], [1, 4, 8]]
+not alloc_(1,o7), not alloc_(4,o9), not pref_(1:(o9 > o7),  [[1, 8], [4, 5], [1, 5, 8]]
+not alloc_(1,o7), not alloc_(4,o5), not pref_(1:(o5 > o7),  [[1, 8], [4, 7], [1, 7, 8]]
+# Above is pointless, could just have used the fact that pref_(1:(o3 > o7 and o10)) with
+# alloc_(5,o3)...
+not alloc_(1,o8), not alloc_(5,o3), not pref_(1:(o3 > o8),  [[1, 0], [5, 6], [1, 6, 0]]
+not alloc_(1,o2), not alloc_(5,o3), not pref_(1:(o3 > o2),  [[1, 1], [5, 6], [1, 6, 1]]
+not alloc_(1,o6), not alloc_(5,o3), not pref_(1:(o3 > o6),  [[1, 2], [5, 6], [1, 6, 2]]
+not alloc_(1,o1), not alloc_(5,o3), not pref_(1:(o3 > o1),  [[1, 3], [5, 6], [1, 6, 3]]
+not alloc_(1,o4), not alloc_(5,o3), not pref_(1:(o3 > o4),  [[1, 4], [5, 6], [1, 6, 4]]
+not alloc_(1,o9), not alloc_(5,o3), not pref_(1:(o3 > o9),  [[1, 5], [5, 6], [1, 6, 5]]
+not alloc_(1,o5), not alloc_(5,o3), not pref_(1:(o3 > o5),  [[1, 7], [5, 6], [1, 6, 7]]

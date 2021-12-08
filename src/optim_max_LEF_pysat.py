@@ -1,6 +1,7 @@
 import sys
 #from pysat.solvers import Glucose4
 from pysat.examples.rc2 import RC2
+from pysat.examples.musx import MUSX
 from pysat.formula import WCNF
 
 def parse_tgf(social_file):
@@ -52,11 +53,19 @@ def encode_pref_agent(pref_agent,pref_vars,objects,agents,agent):
 
     return [clauses,n_constraints]
 
-def parse_model(model, agents, objects, alloc_vars):
+def parse_model(model, agents, objects, alloc_vars, pref_vars):
     for agent_id in range(len(agents)):
         for obj_id in range(len(objects)):
             if alloc_vars[agent_id][obj_id] in model:
                 print(f"alloc_({agents[agent_id]},{objects[obj_id]})")
+    parse_unsat_pref(model, agents, objects, pref_vars)
+
+def parse_unsat_pref(model, agents, objects, pref_vars):
+    for agent_id in range(len(agents)):
+        for obj_id in range(len(objects)):
+            for obj2_id in range(len(objects)):
+                if pref_vars[agent_id][obj_id][obj2_id] in model:
+                    print(f"pref_({agents[agent_id]}:({objects[obj_id]} > {objects[obj2_id]})")
 
 if len(sys.argv) != 4:
     sys.exit("Usage: python3 solve_LFE.py <preferences_file> <social_file> <use_complement>")
@@ -137,13 +146,20 @@ for obj_id in range(len(objects)):
             n_constraints += 1
     wcnf.append(at_least_one)
     n_constraints += 1
+
+soft_clauses = []
+
 if not use_complement:
     for agent_i in agents:
         for agent_j in agents:
             if ([agent_i,agent_j] in social) or ([agent_j,agent_i] in social):
                 for obj_k in objects:
                     for obj_l in objects:
-                        wcnf.append([-alloc_vars[agents.index(agent_i)][objects.index(obj_k)], -alloc_vars[agents.index(agent_j)][objects.index(obj_l)], pref_vars[agents.index(agent_i)][objects.index(obj_k)][objects.index(obj_l)]], weight=1)
+                        wcnf.append([-alloc_vars[agents.index(agent_i)][objects.index(obj_k)], -alloc_vars[agents.index(agent_j)][objects.index(obj_l)], -pref_vars[agents.index(agent_i)][objects.index(obj_l)][objects.index(obj_k)]], weight=1)
+                        soft_clauses.append([-alloc_vars[agents.index(agent_i)][objects.index(obj_k)], -alloc_vars[agents.index(agent_j)][objects.index(obj_l)], -pref_vars[agents.index(agent_i)][objects.index(obj_l)][objects.index(obj_k)]])
+                        #wcnf.append([-alloc_vars[agents.index(agent_i)][objects.index(obj_k)], -alloc_vars[agents.index(agent_j)][objects.index(obj_l)], pref_vars[agents.index(agent_i)][objects.index(obj_k)][objects.index(obj_l)]], weight=1)
+                        #soft_clauses.append([-alloc_vars[agents.index(agent_i)][objects.index(obj_k)], -alloc_vars[agents.index(agent_j)][objects.index(obj_l)], pref_vars[agents.index(agent_i)][objects.index(obj_k)][objects.index(obj_l)]])
+                        
                         n_constraints += 1
 else:
     unknown_agents = dict()
@@ -163,6 +179,7 @@ else:
                 for agent_j in unknown_agents[agent_i]:
                     clause.append(alloc_vars[agents.index(agent_j)][objects.index(obj_k)])
                 wcnf.append(clause, weight=1)
+                soft_clauses.append([lit for lit in clause])
                 n_constraints += 1    
 
 
@@ -172,12 +189,93 @@ for agent in agents:
     wcnf.extend(pb_pref_agent[0])
     n_constraints += pb_pref_agent[1]
 
+print(n_constraints, len(wcnf.soft))
+mus = None
+if input("force? [Y]")=="Y":
+    wcnf.append([alloc_vars[0][2]])
 with RC2(wcnf) as rc2:
     model = rc2.compute()
     if rc2.cost == 0:
         print("LEF allocation found")
-        parse_model(model[:alloc_var_id], agents, objects, alloc_vars)
+        parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
+        print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
     else:
         print("No LEF allocation")
-        parse_model(model[:alloc_var_id], agents, objects, alloc_vars)
-        print(f"Solution with {rc2.cost} non-LEF agent{'s' if rc2.cost > 1 else ''}")
+        parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
+        print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
+        #rc2.get_core()
+        #print(rc2.core_sels)
+        
+        if input("Compute MUS? [Y]")=="Y":
+            musx = MUSX(wcnf, verbosity=0)
+            mus = musx.compute()
+            #print(f"MUS: {mus}")
+            #parse_unsat_pref([lit for lit in mus if lit > alloc_var_id], agents, objects, pref_vars)
+            #print(len(wcnf.hard), len(wcnf.soft))
+            #for x in mus:
+            #    print(wcnf.soft[x-1])
+
+if mus == None:
+    exit(0)
+print(f"len mus: {len(mus)}")
+clause_mus = []
+for i in range(len(mus)):
+    clause_mus.append(soft_clauses[mus[i]-1])
+
+
+def decode_mus(clause_mus, use_complement=use_complement):
+    ids = []
+    if use_complement:
+        for clause in clause_mus:
+            ids.append(decode_comp_clause(clause))
+    else:
+        for clause in clause_mus:
+            ids.append(decode_not_comp_clause(clause))
+    return ids
+
+
+def decode_comp_clause(clause):
+    result, ids = parse(clause, agents, objects, alloc_vars, pref_vars)
+    print(result)
+    return ids
+
+
+
+def decode_not_comp_clause(clause):
+    result, ids = parse(clause, agents, objects, alloc_vars, pref_vars)
+    print(result)
+    return ids
+
+
+def parse(model, agents, objects, alloc_vars, pref_vars):
+    result = ""
+    ids = []
+    for agent_id in range(len(agents)):
+        for obj_id in range(len(objects)):
+            if -alloc_vars[agent_id][obj_id] in model:
+                ids.append([agent_id, obj_id])
+                result += f"not alloc_({agents[agent_id]},{objects[obj_id]}), "
+    for agent_id in range(len(agents)):
+        for obj_id in range(len(objects)):
+            if alloc_vars[agent_id][obj_id] in model:
+                ids.append([agent_id, obj_id])
+                result += f"alloc_({agents[agent_id]},{objects[obj_id]}), "
+    for agent_id in range(len(agents)):
+        for obj_id in range(len(objects)):
+            for obj2_id in  range(len(objects)):
+                if -pref_vars[agent_id][obj_id][obj2_id] in model:
+                    ids.append([agent_id, obj_id, obj2_id])
+                    result += f"not pref_({agents[agent_id]}:({objects[obj_id]} > {objects[obj2_id]}), "
+    for agent_id in range(len(agents)):
+        for obj_id in range(len(objects)):
+            for obj2_id in  range(len(objects)):
+                if pref_vars[agent_id][obj_id][obj2_id] in model:
+                    ids.append([agent_id, obj_id, obj2_id])
+                    result += f"pref_({agents[agent_id]}:({objects[obj_id]} > {objects[obj2_id]}), "
+    
+    return result, ids
+
+ids = decode_mus(clause_mus)
+#ids = [i[-1] for i in ids]
+#print(ids)
+#print(objects[ids[0][1]])

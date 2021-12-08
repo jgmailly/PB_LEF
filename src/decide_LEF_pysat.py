@@ -2,6 +2,8 @@ import sys
 from pysat.solvers import Glucose4
 from pysat.formula import CNF
 
+from pysat.examples.musx import MUSX
+
 def parse_tgf(social_file):
     with open(social_file) as soc_file:
         social_lines = soc_file.read().splitlines()
@@ -178,3 +180,7 @@ with Glucose4(bootstrap_with=cnf.clauses) as g:
         parse_model(g.get_model()[:alloc_var_id], agents, objects, alloc_vars)
     else:
         print("No LEF allocation")
+        if input("Compute MUS? [Y]")=="Y":
+            musx = MUSX(cnf, verbosity=0)
+            mus = musx.compute()
+            print(f"MUS: {mus}")
