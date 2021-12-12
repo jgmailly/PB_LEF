@@ -191,8 +191,10 @@ for agent in agents:
 
 print(n_constraints, len(wcnf.soft))
 mus = None
-if input("force? [Y]")=="Y":
-    wcnf.append([alloc_vars[0][2]])
+print("Force an allocation? e.g. '0 o2' =>  alloc(0,o2)")
+response = input().split()
+if len(response) == 2:
+    wcnf.append([alloc_vars[agents.index(response[0])][objects.index(response[1])]])
 with RC2(wcnf) as rc2:
     model = rc2.compute()
     if rc2.cost == 0:
@@ -260,18 +262,18 @@ def parse(model, agents, objects, alloc_vars, pref_vars):
             if alloc_vars[agent_id][obj_id] in model:
                 ids.append([agent_id, obj_id])
                 result += f"alloc_({agents[agent_id]},{objects[obj_id]}), "
-    for agent_id in range(len(agents)):
-        for obj_id in range(len(objects)):
-            for obj2_id in  range(len(objects)):
-                if -pref_vars[agent_id][obj_id][obj2_id] in model:
-                    ids.append([agent_id, obj_id, obj2_id])
-                    result += f"not pref_({agents[agent_id]}:({objects[obj_id]} > {objects[obj2_id]}), "
-    for agent_id in range(len(agents)):
-        for obj_id in range(len(objects)):
-            for obj2_id in  range(len(objects)):
-                if pref_vars[agent_id][obj_id][obj2_id] in model:
-                    ids.append([agent_id, obj_id, obj2_id])
-                    result += f"pref_({agents[agent_id]}:({objects[obj_id]} > {objects[obj2_id]}), "
+    # for agent_id in range(len(agents)):
+    #     for obj_id in range(len(objects)):
+    #         for obj2_id in  range(len(objects)):
+    #             if -pref_vars[agent_id][obj_id][obj2_id] in model:
+    #                 ids.append([agent_id, obj_id, obj2_id])
+    #                 result += f"not pref_({agents[agent_id]}:({objects[obj_id]} > {objects[obj2_id]}), "
+    # for agent_id in range(len(agents)):
+    #     for obj_id in range(len(objects)):
+    #         for obj2_id in  range(len(objects)):
+    #             if pref_vars[agent_id][obj_id][obj2_id] in model:
+    #                 ids.append([agent_id, obj_id, obj2_id])
+    #                 result += f"pref_({agents[agent_id]}:({objects[obj_id]} > {objects[obj2_id]}), "
     
     return result, ids
 
