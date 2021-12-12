@@ -219,18 +219,11 @@ for i in range(len(mus)):
 
 
 
-def decode_mus(clause_mus):
-    ids = set()
-    for clause in clause_mus:
-        ids.add(decode_clause(clause))
-    return ids
-
-
 
 def decode_clause(clause):
-    result, ids = parse_better(clause, agents, objects, alloc_vars, pref_vars)
+    result, ids, set_agent, set_obj = parse_better(clause, agents, objects, alloc_vars, pref_vars)
     print(result)
-    return ids
+    return ids, set_agent, set_obj 
 
 
 def parse(model, agents, objects, alloc_vars, pref_vars):
@@ -252,11 +245,15 @@ def parse(model, agents, objects, alloc_vars, pref_vars):
 def parse_better(model, agents, objects, alloc_vars, pref_vars):
     result = ""
     ids = []
+    set_obj = set()
+    set_agent = set()
     for agent_id in range(len(agents)):
         for obj_id in range(len(objects)):
             if -alloc_vars[agent_id][obj_id] in model:
                 ids.append(agent_id)
                 result += f"alloc_({agents[agent_id]},{objects[obj_id]}) => "
+                set_agent.add(agent_id)
+                set_obj.add(obj_id)
     for agent_id in range(len(agents)):
         started = False
         for obj_id in range(len(objects)):
@@ -264,15 +261,55 @@ def parse_better(model, agents, objects, alloc_vars, pref_vars):
                 if not started:
                     ids.append(agent_id)
                     result += f"alloc_({agents[agent_id]}, {{"
+                    set_agent.add(agent_id)
                     started = True
                 result += f"{objects[obj_id]},"
+                
+                set_obj.add(obj_id)
         if started:
             result += "})"
             started = False
         
-    return result, (ids[0], ids[1]) if len(ids)==2 else (ids[0],)
+    return result, (ids[0], ids[1]) if len(ids)==2 else (ids[0],), set_agent, set_obj
+
+def decode_mus(clause_mus):
+    ids = set()
+    two = 0
+    one = 0
+    set_ag = set()
+    set_ob = set()
+    for clause in clause_mus:
+        ids_clause, set_agent, set_obj  = decode_clause(clause)
+        set_ag = set_ag.union(set_agent)
+        set_ob = set_ob.union(set_obj)
+        if len(ids_clause) == 2:
+            two += 1
+        else:
+            one += 1
+        ids.add(ids_clause)
+        
+    return ids, one, two, set_ag, set_ob
 
 
+ids, one, two, set_ag, set_obj  = decode_mus(clause_mus)
+print(one, two, set_ag, set_obj )
 
-ids = decode_mus(clause_mus)
-print(ids)
+def reduce_MUS(clause_mus):
+    acc = []
+    ones = [clause for clause in clause_mus if len(clause)==1]
+    clause_mus = [clause for clause in clause_mus if len(clause)>1]
+    while len(ones)>0:
+        for one_clause in ones:
+            for i in range(len(clause_mus)):
+                if -one_clause[0] in clause_mus[i]:
+                    clause_mus[i].remove(-one_clause[0])
+        print(len(clause_mus), clause_mus)
+        acc.extend(ones)
+        ones = [clause for clause in clause_mus if len(clause)==1]
+        clause_mus = [clause for clause in clause_mus if len(clause)>1]
+    return clause_mus, acc
+    
+cl ,acc = reduce_MUS(clause_mus)
+cl.extend(acc)
+ids, one, two, set_ag, set_obj = decode_mus(cl)
+print(one, two, len(set_ag), len(set_obj) )

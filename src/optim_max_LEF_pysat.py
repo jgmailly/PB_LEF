@@ -125,6 +125,7 @@ for agent in agents:
             pref_vars[agents.index(agent)][objects.index(obj_k)].append(alloc_var_id + pref_var_id)
 
 wcnf = WCNF()
+wcnf2 = WCNF()
 n_constraints = 0
 
 for agent_id in range(len(agents)):
@@ -133,8 +134,10 @@ for agent_id in range(len(agents)):
         at_least_one.append(alloc_vars[agent_id][obj_id])
         for obj2_id in range(obj_id+1, len(objects)):
             wcnf.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent_id][obj2_id]])
+            wcnf2.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent_id][obj2_id]])
             n_constraints += 1
     wcnf.append(at_least_one)
+    wcnf2.append([lit for lit in at_least_one])
     n_constraints += 1
 
 for obj_id in range(len(objects)):
@@ -143,8 +146,10 @@ for obj_id in range(len(objects)):
         at_least_one.append(alloc_vars[agent_id][obj_id])
         for agent2_id in range(agent_id+1, len(agents)):
             wcnf.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent2_id][obj_id]])
+            wcnf2.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent2_id][obj_id]])
             n_constraints += 1
     wcnf.append(at_least_one)
+    wcnf2.append([lit for lit in at_least_one])
     n_constraints += 1
 
 soft_clauses = []
@@ -187,7 +192,10 @@ for agent in agents:
     pref_agent = preferences[agents.index(agent)]
     pb_pref_agent = encode_pref_agent(pref_agent,pref_vars,objects,agents,agent)
     wcnf.extend(pb_pref_agent[0])
+    wcnf2.extend([[lit for lit in clause] for clause in pb_pref_agent[0]])
     n_constraints += pb_pref_agent[1]
+
+wcnf2.extend(soft_clauses, weights=[1]*len(soft_clauses))
 
 print(n_constraints, len(wcnf.soft))
 mus = None
@@ -195,6 +203,7 @@ print("Force an allocation? e.g. '0 o2' =>  alloc(0,o2)")
 response = input().split()
 if len(response) == 2:
     wcnf.append([alloc_vars[agents.index(response[0])][objects.index(response[1])]])
+    wcnf2.append([alloc_vars[agents.index(response[0])][objects.index(response[1])]])
 with RC2(wcnf) as rc2:
     model = rc2.compute()
     if rc2.cost == 0:
@@ -209,13 +218,9 @@ with RC2(wcnf) as rc2:
         #print(rc2.core_sels)
         
         if input("Compute MUS? [Y]")=="Y":
-            musx = MUSX(wcnf, verbosity=0)
+            musx = MUSX(wcnf2, verbosity=0)
+            print(wcnf2.soft[0], wcnf.soft[0])
             mus = musx.compute()
-            #print(f"MUS: {mus}")
-            #parse_unsat_pref([lit for lit in mus if lit > alloc_var_id], agents, objects, pref_vars)
-            #print(len(wcnf.hard), len(wcnf.soft))
-            #for x in mus:
-            #    print(wcnf.soft[x-1])
 
 if mus == None:
     exit(0)
