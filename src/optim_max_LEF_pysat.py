@@ -204,25 +204,26 @@ response = input().split()
 if len(response) == 2:
     wcnf.append([alloc_vars[agents.index(response[0])][objects.index(response[1])]])
     wcnf2.append([alloc_vars[agents.index(response[0])][objects.index(response[1])]])
-with RC2(wcnf) as rc2:
-    model = rc2.compute()
-    if rc2.cost == 0:
-        print("LEF allocation found")
-        parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
-        print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
-    else:
-        print("No LEF allocation")
-        parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
-        print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
-        #rc2.get_core()
-        #print(rc2.core_sels)
-        
-        if input("Compute MUS? [Y]")=="Y":
-            musx = MUSX(wcnf2, verbosity=0)
-            print(wcnf2.soft[0], wcnf.soft[0])
-            mus = musx.compute()
+response = input("Solution or MUS? [sol|mus]: ")
+if response.lower() == "sol":
+    with RC2(wcnf) as rc2:
+        model = rc2.compute()
+        if rc2.cost == 0:
+            print("LEF allocation found")
+            parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
+            print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
+        else:
+            print("No LEF allocation")
+            parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
+            print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
+            
 
-if mus == None:
+elif response.lower() == "mus":
+    musx = MUSX(wcnf, verbosity=0)
+    mus = musx.compute()
+    if mus == None:
+        exit(0)
+else:
     exit(0)
 print(f"len mus: {len(mus)}")
 clause_mus = []

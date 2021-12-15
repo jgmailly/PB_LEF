@@ -177,39 +177,34 @@ print(n_constraints, len(wcnf.soft))
 mus = None
 print("Force an allocation? e.g. '0 o2' =>  alloc(0,o2)")
 response = input().split()
+forced_object = None
 if len(response) == 2:
     wcnf.append([alloc_vars[agents.index(response[0])][objects.index(response[1])]])
     wcnf2.append([alloc_vars[agents.index(response[0])][objects.index(response[1])]])
-# with RC2(wcnf) as rc2:
-#     model = rc2.compute()
-#     if rc2.cost == 0:
-#         print("LEF allocation found")
-#         parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
-#         print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
-#     else:
-#         print("No LEF allocation")
-#         parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
-#         print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
-#         #rc2.get_core()
-#         #print(rc2.core_sels)
-        
-#         if input("Compute MUS? [Y]")=="Y":
-#             musx = MUSX(wcnf, verbosity=0)
-#             mus = musx.compute()
-            
-#             #print(f"MUS: {mus}")
-#             #parse_unsat_pref([lit for lit in mus if lit > alloc_var_id], agents, objects, pref_vars)
-#             #print(len(wcnf.hard), len(wcnf.soft))
-#             #for x in mus:
-#             #    print(wcnf.soft[x-1])
+    forced_object = (agents.index(response[0]), objects.index(response[1]))
+response = input("Solution or MUS? [sol|mus]: ")
+if response.lower() == "sol":
+    with RC2(wcnf) as rc2:
+        model = rc2.compute()
+        if rc2.cost == 0:
+            print("LEF allocation found")
+            parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
+            print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
+        else:
+            print("No LEF allocation")
+            parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
+            print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
+    exit(0)
+                
 
-if input("Compute MUS? [Y]")=="Y":
+elif response.lower() == "mus":
     musx = MUSX(wcnf, verbosity=0)
     mus = musx.compute()
-            
+    if mus == None:
+        print("Solution Found.")
+        exit(0)
 
-
-if mus == None:
+else:
     exit(0)
 print(f"len mus: {len(mus)}")
 clause_mus = []
@@ -293,6 +288,7 @@ def decode_mus(clause_mus):
 
 ids, one, two, set_ag, set_obj  = decode_mus(clause_mus)
 print(one, two, set_ag, set_obj )
+print()
 
 def reduce_MUS(clause_mus):
     acc = []
@@ -308,8 +304,21 @@ def reduce_MUS(clause_mus):
         ones = [clause for clause in clause_mus if len(clause)==1]
         clause_mus = [clause for clause in clause_mus if len(clause)>1]
     return clause_mus, acc
-    
+
+
+if forced_object != None:
+    print("We forced an allocation, we can remove impossible assignment")
+    for i in range(len(agents)):
+        if i == forced_object[1]:
+            continue
+        for clause in clause_mus:
+            if alloc_vars[forced_object[0]][i] in clause:
+                clause.remove(alloc_vars[forced_object[0]][i])
+    ids, one, two, set_ag, set_obj = decode_mus(clause_mus)
+    print(one, two, set_ag, set_obj)
+
+print("Performing resolution to reduce the MUS")
 cl ,acc = reduce_MUS(clause_mus)
 cl.extend(acc)
 ids, one, two, set_ag, set_obj = decode_mus(cl)
-print(one, two, len(set_ag), len(set_obj) )
+print(one, two, set_ag, set_obj)
