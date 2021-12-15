@@ -307,17 +307,22 @@ def reduce_MUS(clause_mus):
 
 
 if forced_object != None:
-    print("We forced an allocation, we can remove impossible assignment")
-    for i in range(len(agents)):
-        if i == forced_object[1]:
-            continue
-        for clause in clause_mus:
-            if alloc_vars[forced_object[0]][i] in clause:
-                clause.remove(alloc_vars[forced_object[0]][i])
+    print("We forced an allocation, we can remove impossible assignments")
+    for i in range(len(objects)): # remove impossible objects for forced agent
+        if i != forced_object[1]:
+            for clause in clause_mus:
+                if alloc_vars[forced_object[0]][i] in clause:
+                    clause.remove(alloc_vars[forced_object[0]][i])
+    for i in range(len(agents)): # remove impossible object for non forced agents
+        if i != forced_object[0]:
+            for clause in clause_mus:
+                if alloc_vars[i][forced_object[1]] in clause:
+                    clause.remove(alloc_vars[i][forced_object[1]])
     ids, one, two, set_ag, set_obj = decode_mus(clause_mus)
     print(one, two, set_ag, set_obj)
+    print()
 
-print("Performing resolution to reduce the MUS")
+print("Performing resolutions to reduce the MUS")
 cl ,acc = reduce_MUS(clause_mus)
 cl.extend(acc)
 ids, one, two, set_ag, set_obj = decode_mus(cl)
