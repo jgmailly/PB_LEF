@@ -97,10 +97,6 @@ if len(objects) != len(agents):
 
 n_agents = len(agents)
 
-def prefer(agent,obj_k,obj_l):
-    pref_agent = preferences[agents.index(agent)]
-    return pref_agent.index(obj_k) < pref_agent.index(obj_l)
-
 problem = Problem()
 problem.addVariables(agents, objects)
 n_constraints = 0
