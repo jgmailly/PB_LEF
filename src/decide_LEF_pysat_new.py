@@ -58,7 +58,7 @@ def parse_model(model, agents, objects, alloc_vars, pref_vars):
         for obj_id in range(len(objects)):
             if alloc_vars[agent_id][obj_id] in model:
                 print(f"alloc_({agents[agent_id]},{objects[obj_id]})")
-    parse_unsat_pref(model, agents, objects, pref_vars)
+    #parse_unsat_pref(model, agents, objects, pref_vars)
 
 def parse_unsat_pref(model, agents, objects, pref_vars):
     for agent_id in range(len(agents)):
