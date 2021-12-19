@@ -107,14 +107,20 @@ n_constraints = 0
 
 problem.addConstraint(AllDifferentConstraint())
 n_constraints+=1
+
+def lamb(k,l):
+    def inner(i,j):
+        return not i==k or not j==l
+    return inner
+
 for agent_i in agents:
-        for agent_j in agents:
-            if ([agent_i,agent_j] in social) or ([agent_j,agent_i] in social):
-                for obj_k in objects:
-                    for obj_l in objects:
-                        if obj_k!=obj_l and not prefer(agent_i,obj_k,obj_l):
-                            problem.addConstraint(lambda i,j: not (i==obj_k and j==obj_l), [agent_i, agent_j])
-                            n_constraints+=1
+    for agent_j in agents:
+        if ([agent_i,agent_j] in social) or ([agent_j,agent_i] in social):
+            for obj_k in objects:
+                for obj_l in objects:
+                    if obj_k!=obj_l and not prefer(agent_i,obj_k,obj_l):
+                        problem.addConstraint(lamb(obj_k,obj_l), [agent_i, agent_j])
+                        n_constraints+=1
 
 print(problem.getSolution(), n_constraints)
                             
