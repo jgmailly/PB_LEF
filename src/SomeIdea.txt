@@ -7,4 +7,6 @@ lack of MUS-like structure. One thing That should be tried is counter-factual ex
 -Killian
 
 
-TODO: reduce mus some more by propagating singleton "alloc(i, oj)"
+TODO: reduce mus some more by propagating singleton "alloc(i, oj)" -Killian
+
+TODO: implement better formulation of pseudo boolean (inspired by csp/sat formulation) -Killian
