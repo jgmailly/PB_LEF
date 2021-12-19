@@ -157,9 +157,12 @@ for agent_i in agents:
     ordObj = [obj for obj in ordObj if len(obj) > 0] #clean the preference (it has an empty "" usually)
     for agent_j in agents:
         if ([agent_i,agent_j] in social) or ([agent_j,agent_i] in social):    
+            ordObj2 = preferences[agents.index(agent_j)]
+            ordObj2 = [obj for obj in ordObj2 if len(obj) > 0] #clean the preference (it has an empty "" usually)
             for i in range(len(ordObj)):
                 clause = [-alloc_vars[agents.index(agent_j)][objects.index(ordObj[i])]]
-                for obj in ordObj[:i]:
+                for obj in ordObj[:i]: #must be an object agent_i prefer to ordObj[i]
+                    #if obj in ordObj2[ordObj2.index(ordObj[i])+1:]: #must not be an object agent_j prefer to ordObj[i]
                     clause.append(alloc_vars[agents.index(agent_i)][objects.index(obj)])
                 wcnf.append(clause, weight=1)
                 soft_clauses.append([lit for lit in clause])
@@ -218,7 +221,7 @@ for i in range(len(mus)):
 
 def decode_clause(clause):
     result, ids, set_agent, set_obj = parse_better(clause, agents, objects, alloc_vars, pref_vars)
-    print(result)
+    print(result) if len(result) != 0 else print("False !")
     return ids, set_agent, set_obj 
 
 
@@ -265,7 +268,10 @@ def parse_better(model, agents, objects, alloc_vars, pref_vars):
         if started:
             result += "})"
             started = False
-        
+    
+    if ids == []: #False, so the clause is a contradiction
+        return result, None, set_agent, set_obj
+
     return result, (ids[0], ids[1]) if len(ids)==2 else (ids[0],), set_agent, set_obj
 
 def decode_mus(clause_mus):
@@ -278,9 +284,9 @@ def decode_mus(clause_mus):
         ids_clause, set_agent, set_obj  = decode_clause(clause)
         set_ag = set_ag.union(set_agent)
         set_ob = set_ob.union(set_obj)
-        if len(ids_clause) == 2:
+        if ids_clause != None and len(ids_clause) == 2:
             two += 1
-        else:
+        elif ids_clause != None and len(ids_clause) == 1:
             one += 1
         ids.add(ids_clause)
         

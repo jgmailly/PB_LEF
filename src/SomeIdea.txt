@@ -5,3 +5,6 @@ CSP formulation is really natural, and seems fast even with a pure python backtr
 that's good if we want speed (probably use an existing CSP solver in another language), the problem with the CSP formulation is the
 lack of MUS-like structure. One thing That should be tried is counter-factual explanation (found that in some paper, ask me if you want)
 -Killian
+
+
+TODO: reduce mus some more by propagating singleton "alloc(i, oj)"
