@@ -1,0 +1,2 @@
+How to show that there is no more equitable alloc exist ? maybe add one ~alloc for each case in the lower rectangle of preference, 
+compute MUS and get solution from there
