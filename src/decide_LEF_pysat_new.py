@@ -4,6 +4,8 @@ from pysat.examples.rc2 import RC2
 from pysat.examples.musx import MUSX
 from pysat.formula import WCNF
 
+import time
+
 def parse_tgf(social_file):
     with open(social_file) as soc_file:
         social_lines = soc_file.read().splitlines()
@@ -104,6 +106,9 @@ alloc_vars = []
 n_vars = 0
 alloc_var_id = 0
 
+
+start = time.time()
+
 for agent in agents:
     alloc_vars.append([])
     for obj in objects:
@@ -152,13 +157,13 @@ for obj_id in range(len(objects)):
     n_constraints += 1
 
 
-for agent_i in agents:
+for agent_i in agents: #TODO
     ordObj = preferences[agents.index(agent_i)]
     ordObj = [obj for obj in ordObj if len(obj) > 0] #clean the preference (it has an empty "" usually)
-    for agent_j in agents:
+    for agent_j in agents:   #TODO
         if ([agent_i,agent_j] in social) or ([agent_j,agent_i] in social):    
-            ordObj2 = preferences[agents.index(agent_j)]
-            ordObj2 = [obj for obj in ordObj2 if len(obj) > 0] #clean the preference (it has an empty "" usually)
+            # ordObj2 = preferences[agents.index(agent_j)]
+            # ordObj2 = [obj for obj in ordObj2 if len(obj) > 0] #clean the preference (it has an empty "" usually)
             for i in range(len(ordObj)):
                 clause = [-alloc_vars[agents.index(agent_j)][objects.index(ordObj[i])]]
                 for obj in ordObj[:i]: #must be an object agent_i prefer to ordObj[i]
@@ -176,6 +181,10 @@ for agent_i in agents:
 #     wcnf2.extend([[lit for lit in clause] for clause in pb_pref_agent[0]])
 #     n_constraints += pb_pref_agent[1]
 
+
+end_writing = time.time()
+print(f"time spent writing: {end_writing - start}")
+
 print(n_constraints, len(wcnf.soft))
 mus = None
 print("Force an allocation? e.g. '0 o2' =>  alloc(0,o2)")
@@ -186,9 +195,14 @@ if len(response) == 2:
     wcnf2.append([alloc_vars[agents.index(response[0])][objects.index(response[1])]])
     forced_object = (agents.index(response[0]), objects.index(response[1]))
 response = input("Solution or MUS? [sol|mus]: ")
+
+start_thinking = time.time()
+
 if response.lower() == "sol":
     with Glucose4(bootstrap_with= wcnf.hard + wcnf.soft) as g:
         LEF = g.solve()
+        
+        end = time.time()
         model = g.get_model()
         if LEF:
             print("LEF allocation found")
@@ -198,6 +212,11 @@ if response.lower() == "sol":
             print("No LEF allocation")
             #parse_model(model[:alloc_var_id], agents, objects, alloc_vars, pref_vars)
             #print(f"Solution with {rc2.cost} unsatisfied soft clause{'s' if rc2.cost > 1 else ''}")
+
+        
+    print(f"time spent finding solution: {end - start_thinking}")
+    print(f"time spent in total: {end - start_thinking + end_writing - start}")
+
     exit(0)
                 
 
@@ -334,3 +353,8 @@ cl ,acc = reduce_MUS(clause_mus)
 cl.extend(acc)
 ids, one, two, set_ag, set_obj = decode_mus(cl)
 print(one, two, set_ag, set_obj)
+
+
+end = time.time()
+print(f"time spent finding solution: {end - start_thinking}")
+print(f"time spent in total: {end - start_thinking + end_writing - start}")

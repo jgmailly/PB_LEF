@@ -4,6 +4,8 @@ from pysat.formula import CNF
 
 from pysat.examples.musx import MUSX
 
+import time
+
 def parse_tgf(social_file):
     with open(social_file) as soc_file:
         social_lines = soc_file.read().splitlines()
@@ -97,6 +99,10 @@ alloc_vars = []
 n_vars = 0
 alloc_var_id = 0
 
+
+start = time.time()
+
+
 for agent in agents:
     alloc_vars.append([])
     for obj in objects:
@@ -173,6 +179,10 @@ for agent in agents:
     cnf.extend(pb_pref_agent[0])
     n_constraints += pb_pref_agent[1]
 
+
+end_writing = time.time()
+print(f"time spent writing: {end_writing - start}")
+
 with Glucose4(bootstrap_with=cnf.clauses) as g:
     LEF = g.solve()
     if LEF:
@@ -180,7 +190,11 @@ with Glucose4(bootstrap_with=cnf.clauses) as g:
         parse_model(g.get_model()[:alloc_var_id], agents, objects, alloc_vars)
     else:
         print("No LEF allocation")
-        if input("Compute MUS? [Y]")=="Y":
-            musx = MUSX(cnf, verbosity=0)
-            mus = musx.compute()
-            print(f"MUS: {mus}")
+        # if input("Compute MUS? [Y]")=="Y":
+        #     musx = MUSX(cnf, verbosity=0)
+        #     mus = musx.compute()
+        #     print(f"MUS: {mus}")
+    
+    end = time.time()
+    print(f"time spent finding solution: {end - end_writing}")
+    print(f"time spent in total: {end - start}")

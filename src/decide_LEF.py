@@ -1,5 +1,6 @@
 import sys
 import subprocess
+import time
 
 from networkx.algorithms.operators.unary import complement
 
@@ -108,6 +109,10 @@ n_agents = len(agents)
 alloc_vars = []
 n_vars = 0
 
+
+start = time.time()
+
+
 for agent in agents:
     alloc_vars.append([])
     for obj in objects:
@@ -198,6 +203,12 @@ print(pb_encoding, file = tmp_file)
 
 
 tmp_file.close()
+
+
+
+end_writing = time.time()
+print(f"time spent writing: {end_writing - start}")
+
 process = subprocess.run(["java", "-jar", "sat4j-pb.jar", "tmp.opb"], capture_output=True,encoding="UTF-8")
 
 #print(process.stdout)
@@ -221,3 +232,8 @@ if has_solution:
         print(alloc)
 else:
     print("No LEF allocation")
+
+
+end = time.time()
+print(f"time spent finding solution: {end - end_writing}")
+print(f"time spent in total: {end - start}")
