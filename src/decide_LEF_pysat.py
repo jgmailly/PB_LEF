@@ -1,5 +1,5 @@
 import sys
-from pysat.solvers import Glucose4
+from pysat.solvers import Glucose4, Minisat22
 from pysat.formula import CNF
 
 from pysat.examples.musx import MUSX
