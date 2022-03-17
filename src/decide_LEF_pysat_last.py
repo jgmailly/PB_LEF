@@ -4,9 +4,15 @@ from pysat.examples.rc2 import RC2
 from pysat.examples.musx import MUSX
 from pysat.examples.mcsls import MCSls
 from pysat.formula import WCNF
+import matplotlib.pyplot as plt
 import random
-
+import networkx as nx
 import time
+
+from collections import defaultdict
+
+
+import graphviz
 
 def parse_tgf(social_file):
     with open(social_file) as soc_file:
@@ -247,12 +253,15 @@ response = []
 
 start = time.time()
 
+lit_meaning = dict()
+
 for agent in agents:
     alloc_vars.append([])
     for obj in objects:
         n_vars += 1
         alloc_var_id += 1
         alloc_vars[agents.index(agent)].append(alloc_var_id)
+        lit_meaning[alloc_var_id] = f"alloc({agent},{obj})"
 
 pref_var_id = 0
 
@@ -265,36 +274,77 @@ for agent in agents:
             n_vars += 1
             pref_var_id += 1
             pref_vars[agents.index(agent)][objects.index(obj_k)].append(alloc_var_id + pref_var_id)
+            
+            lit_meaning[alloc_var_id + pref_var_id] = f"pref({agent}|{obj_k}<{obj_l})"
+
+
+
+clause2meaning = dict()
 
 wcnf = WCNF()
 #wcnf2 = WCNF()
 n_constraints = 0
 soft_clauses = []
+
+print("Force an allocation? e.g. '0 o2' =>  alloc(0,o2)")
+response = input().split()
+forced_object = None
+forced_clause = None
+if len(response) == 2:
+    clause = [alloc_vars[agents.index(response[0])][objects.index(response[1])]]
+    clause2meaning[tuple(clause)] = f"forced allocation of {response[0]} {response[1]}"
+    wcnf.append(clause)
+    forced_clause = [lit for lit in clause]
+    forced_object = (agents.index(response[0]), objects.index(response[1]))
+    n_constraints += 1
+
+
 for agent_id in range(len(agents)):
+    if forced_object != None and agent_id == forced_object[0]: continue
     at_least_one = []
     for obj_id in range(len(objects)):
+        if forced_object != None and obj_id == forced_object[1]: continue
         at_least_one.append(alloc_vars[agent_id][obj_id])
         for obj2_id in range(obj_id+1, len(objects)):
+            if forced_object != None and obj2_id == forced_object[1]: continue
+            
             clause = [-alloc_vars[agent_id][obj_id], -alloc_vars[agent_id][obj2_id]]
             wcnf.append(clause, weight=1)
             soft_clauses.append([lit for lit in clause])
+            
+            clause2meaning[tuple(clause)] = f"only one object for agent {agents[agent_id]} ({objects[obj_id]},{objects[obj2_id]})"
+    
+            
             #wcnf2.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent_id][obj2_id]])
-            n_constraints += 1
-    if agent_id not in response:
-        wcnf.append(at_least_one,weight=1)
-        soft_clauses.append([lit for lit in at_least_one])
-    n_constraints += 1
-
-for obj_id in range(len(objects)):
-    at_least_one = []
-    for agent_id in range(len(agents)):
-        at_least_one.append(alloc_vars[agent_id][obj_id])
-        for agent2_id in range(agent_id+1, len(agents)):
-            wcnf.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent2_id][obj_id]])
-            #wcnf2.append([-alloc_vars[agent_id][obj_id], -alloc_vars[agent2_id][obj_id]])
             n_constraints += 1
     wcnf.append(at_least_one,weight=1)
     soft_clauses.append([lit for lit in at_least_one])
+    clause2meaning[tuple(at_least_one)] = f"at least one object for agent {agents[agent_id]}"
+    
+    n_constraints += 1
+
+for obj_id in range(len(objects)):
+    if forced_object != None and obj_id == forced_object[1]: continue
+    at_least_one = []
+    for agent_id in range(len(agents)):
+        if forced_object != None and agent_id == forced_object[0]: continue
+        at_least_one.append(alloc_vars[agent_id][obj_id])
+        for agent2_id in range(agent_id+1, len(agents)):
+            if forced_object != None and agent2_id == forced_object[0]: continue
+            clause=[-alloc_vars[agent_id][obj_id], -alloc_vars[agent2_id][obj_id]]
+            wcnf.append(clause,weight=1)
+            soft_clauses.append([lit for lit in clause])
+
+
+            clause2meaning[tuple(clause)] = f"only one agent for object {objects[obj_id]} ({agents[agent_id]},{agents[agent2_id]})"
+
+            n_constraints += 1
+    wcnf.append(at_least_one,weight=1)
+    soft_clauses.append([lit for lit in at_least_one])
+
+    clause2meaning[tuple(at_least_one)] = f"at least one agent for object {objects[obj_id]}"
+    
+
     n_constraints += 1
 
 ordObj_pref = [None]*len(agents)
@@ -313,11 +363,20 @@ for agent1_id in range(len(agents)):
             ordObj2 = ordObj_pref[agent2_id]
             for objAssignedTo2 in range(len(ordObj1)):
                 clause = [-alloc_vars[agent2_id][objAssignedTo2]]
+                meaning = f"alloc({agents[agent2_id]},{objects[objAssignedTo2]}) ->"
+                obj_possible_to_assign = []
                 for objAssignedTo1 in range(len(ordObj2)):
                     if ordObj1[objAssignedTo1] < ordObj1[objAssignedTo2] and ordObj2[objAssignedTo1] > ordObj2[objAssignedTo2]:
                         clause.append(alloc_vars[agent1_id][objAssignedTo1])
+                        obj_possible_to_assign.append(objects[objAssignedTo1]) 
                 wcnf.append(clause, weight=1)
                 soft_clauses.append([lit for lit in clause])
+                if obj_possible_to_assign == []:
+                    meaning += f" False (agent {agents[agent1_id]})"
+                else:
+                    meaning += f" alloc({agents[agent1_id]},{{{'|'.join(obj_possible_to_assign)}}})"
+                clause2meaning[tuple(clause)] = meaning#f"{agents[agent1_id]}-{agents[agent2_id]} preferences consequence"
+
                 n_constraints += 1    
 
 
@@ -334,13 +393,7 @@ print(f"time spent writing: {end_writing - start}")
 
 print(n_constraints, len(wcnf.soft))
 mus = None
-print("Force an allocation? e.g. '0 o2' =>  alloc(0,o2)")
-response = input().split()
-forced_object = None
-if len(response) == 2:
-    wcnf.append([alloc_vars[agents.index(response[0])][objects.index(response[1])]])
-    #wcnf2.append([alloc_vars[agents.index(response[0])][objects.index(response[1])]])
-    forced_object = (agents.index(response[0]), objects.index(response[1]))
+
 
 
 response = input("Solution or MUS? [sol|mus]: ")
@@ -398,6 +451,8 @@ clause_mus = []
 for i in range(len(mus)):
     if i not in []:
         clause_mus.append(soft_clauses[mus[i]-1])
+if forced_clause != None: 
+    clause_mus.append(forced_clause)
 
 
 
@@ -414,12 +469,14 @@ def reduce_MUS(clause_mus):
         for one_clause in ones:
             for i in range(len(clause_mus)):
                 if -one_clause[0] in clause_mus[i]:
+                    tmp = clause2meaning[tuple(clause_mus[i])] 
                     clause_mus[i].remove(-one_clause[0])
+                    clause2meaning[tuple(clause_mus[i])] = tmp
         #print(len(clause_mus), clause_mus)
         acc.extend(ones)
         ones = [clause for clause in clause_mus if (len(clause)==1 and not all(lit>0 for lit in clause))]
-        #FORCE ASSIGNEMENT WHEN JUST POSITIVE
-        forced_assginment = [clause for clause in clause_mus if (len(clause)==1 and all(lit>0 for lit in clause))]
+        ##FORCE ASSIGNEMENT WHEN JUST POSITIVE
+        #forced_assginment = [clause for clause in clause_mus if (len(clause)==1 and all(lit>0 for lit in clause))]
         clause_mus = [clause for clause in clause_mus if(len(clause)>1 or all(lit>0 for lit in clause))]
     return clause_mus, acc
 
@@ -440,12 +497,138 @@ if forced_object != None:
     #print(one, two, set_ag, set_obj)
     print()
 
+def draw_other_dag(clause_mus, name):
+    # TODO
+
+    G = graphviz.Digraph(name)
+
+    at_least_ones = [clause for clause in clause_mus if all((lit>0 for lit in clause))]
+    not_boths = [clause for clause in clause_mus if len(clause)==2 and clause[0] < 0 and clause[1] < 0]
+    impossibles = [clause for clause in clause_mus if len(clause)==1 and clause[0] < 0]
+    chaineds = [clause for clause in clause_mus if not all((lit>0 for lit in clause)) and
+                                                   not (len(clause)==2 and clause[0] < 0 and clause[1] < 0) and
+                                                   not (len(clause)==1 and clause[0] < 0)]
+    
+
+
+    # first accumulate color    
+    colors = ["red3","blue3","yellowgreen","dodgerblue","yellow","green", "violet"]
+    lit2color = defaultdict(lambda:[])
+    for i,clause in enumerate(at_least_ones):
+        color = colors[i]
+        for lit in clause:
+            lit2color[lit].append(color) 
+    
+    for clause in at_least_ones:
+        for lit in clause:
+            print(lit2color[lit])
+            if len(lit2color[lit]) > 1:
+                G.attr('node', shape='circle',  style='wedged',fillcolor=":".join(lit2color[lit]), fontcolor="white")
+            else:
+                G.attr('node', shape='circle',  style='filled',fillcolor=lit2color[lit][0], fontcolor="white")
+            G.node(lit_meaning[lit])
+
+    if len(impossibles) != 0:
+        G.node('False',shape='circle', style='filled',fillcolor="black", fontcolor="white")
+    for clause in impossibles:
+        G.attr('node', shape='circle', style='solid', fontcolor="black")
+    
+        G.edge(lit_meaning[-clause[0]], "False", label=clause2meaning[tuple(clause)], fontsize='10pt')
+
+    
+    
+    for clause in not_boths:
+        G.attr("edge",dir='none', style='dashed')
+        G.attr('node', shape='circle',  style='solid', fontcolor="black")
+        G.node(lit_meaning[-clause[0]])
+        G.node(lit_meaning[-clause[1]])
+        G.edge(lit_meaning[-clause[0]],lit_meaning[-clause[1]])
+    
+
+    for i,clause in enumerate(chaineds):
+        G.attr('node', shape='circle',  style='solid', fontcolor="black")
+        G.attr('edge',dir='forward', style='solid')
+        lit = -clause[0]
+        G.node(lit_meaning[lit])
+        for consequence in clause[1:]:
+            G.attr('edge',dir='forward', style='solid', color=colors[i%len(colors)], label=clause2meaning[tuple(clause)])
+            G.node(lit_meaning[consequence])
+            G.edge(lit_meaning[lit], lit_meaning[consequence])
+
+    
+    G.view()
+
+
+def draw_dag(clause_mus):
+    G = nx.DiGraph()
+
+    restriction_clauses = []
+
+    for clause in clause_mus:
+        if all(lit > 0 for lit in clause):
+            G.add_node(clause[0], label=lit_meaning[clause[0]])
+        else:
+            restriction_clauses.append(clause)
+
+
+    def reduce_clauses(clauses, nodes):
+        new_clauses = []
+        new_nodes = []
+        for clause in clauses:
+            new_clause = [lit for lit in clause if -lit not in nodes]
+            
+        return new_clauses, new_nodes
+    
+    
+
+    new_nodess = []
+    while True:
+        for node in G.nodes:
+            restriction_clauses, new_nodes = reduce_clauses(restriction_clauses, node)
+            new_nodess.extend(new_nodes)
+        if len(new_nodess) == 0:
+            return
+    
+    
+    
+    last_len =0
+    curr_len =len(G.nodes)
+    while last_len != curr_len:
+        
+        #print(curr_len)
+        nodes = list(G.nodes)
+        last_len = curr_len
+
+        for node in nodes:
+            print("hey, ",node)
+            for clause in restriction_clauses:
+                if -node in clause:
+                    pass
+        curr_len = len(G.nodes)
+                            
+
+    pos = nx.spring_layout(G,k = 5.0, iterations=50)
+    #pos = nx.random_layout(G)
+    #pos = nx.kamada_kawai_layout(G)
+    #pos = nx.spectral_layout(G)
+    #pos = nx.shell_layout(G)
+    #pos = nx.spring_layout(G, pos=nx.planar_layout(G), k = 10.0, iterations=50, dim=3)
+    
+    nx.draw(G, pos)
+    
+    plt.show()
+
+
+
+draw_other_dag(clause_mus, "Full MUS DAG")
+
 print("Performing resolutions to reduce the MUS")
 cl ,acc = reduce_MUS(clause_mus)
-cl.extend(acc)
-ids, one, two, set_ag, set_obj = decode_mus(cl,True)
-print(one, two, set_ag, set_obj)
 
+ids, one, two, set_ag, set_obj = decode_mus(cl+ acc,True)
+print(one, two, set_ag, set_obj)
 end = time.time()
+draw_other_dag(cl,"reduced MUS DAG")
+
 print(f"time spent finding solution: {end - start_thinking}")
 print(f"time spent in total: {end - start_thinking + end_writing - start}")
